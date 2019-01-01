@@ -4,9 +4,9 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.Set;
 
-public interface CalendarRepository extends MongoRepository<Calendar, String> {
+public interface CalendarRepository extends MongoRepository<GlencoreCalendar, String> {
 
-    Set<Calendar> findAllByCountryCode(String firstName);
+    Set<GlencoreCalendar> findAllByCountryCode(String firstName);
 
-    Calendar findByCountryCodeAndBank(String countryCode, boolean isBankHoliday);
+    GlencoreCalendar findByCountryCodeAndBank(String countryCode, boolean isBankHoliday);
 }
