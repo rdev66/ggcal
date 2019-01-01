@@ -1,8 +1,8 @@
 package com.glencore.ch.globalcalendar;
 
-import com.glencore.ch.globalcalendar.entity.CalendarRepository;
 import com.glencore.ch.globalcalendar.entity.GlencoreCalendar;
 import com.glencore.ch.globalcalendar.entity.GlencoreEvent;
+import com.glencore.ch.globalcalendar.repository.CalendarRepository;
 import lombok.extern.slf4j.Slf4j;
 import net.fortuna.ical4j.model.Date;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +41,7 @@ public class GlobalCalendarApplication implements CommandLineRunner {
         net.fortuna.ical4j.model.Date tomorrow = new Date(java.util.Date.from(LocalDate.now()
                 .plusDays(1L).atStartOfDay(ZoneId.systemDefault()).toInstant()));
 
-        GlencoreEvent todayEvent = new GlencoreEvent(null, LocalDate.now(), LocalDate.now().plusDays(1L), "Test todayEvent - 1");
+        GlencoreEvent todayEvent = new GlencoreEvent(null, "1", LocalDate.now(), LocalDate.now().plusDays(1L), "Test todayEvent - 1");
 
         repository.save(new GlencoreCalendar(null, "ES-Hol-1", "ES", false, Set.of(todayEvent)));
         repository.save(new GlencoreCalendar(null, "ES-Bank-1", "ES", true, Set.of(todayEvent)));

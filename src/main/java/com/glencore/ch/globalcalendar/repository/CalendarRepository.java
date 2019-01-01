@@ -1,5 +1,6 @@
-package com.glencore.ch.globalcalendar.entity;
+package com.glencore.ch.globalcalendar.repository;
 
+import com.glencore.ch.globalcalendar.entity.GlencoreCalendar;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.Set;
