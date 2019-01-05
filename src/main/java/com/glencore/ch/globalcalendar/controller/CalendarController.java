@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -34,6 +35,14 @@ public class CalendarController {
         this.calendarRepository = calendarRepository;
         this.eventRepository = eventRepository;
     }
+
+
+    @GetMapping(value = "/calendar")
+    public List<GlencoreCalendar> listAllCalendars() {
+        List<GlencoreCalendar> glencoreCalendarList = calendarRepository.findAll();
+        return glencoreCalendarList;
+    }
+
 
     @GetMapping(value = "/calendar/{countryCode}/{bank}", produces = TEXT_PLAIN_VALUE)
     public String getCalendar(@PathVariable(value = "countryCode") String countryCode, @PathVariable(value = "bank") boolean bank) {
