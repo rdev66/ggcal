@@ -37,14 +37,13 @@ public class CalendarController {
     }
 
 
-    @GetMapping(value = "/calendar")
+    @GetMapping(value = "api/calendars")
     public List<GlencoreCalendar> listAllCalendars() {
-        List<GlencoreCalendar> glencoreCalendarList = calendarRepository.findAll();
-        return glencoreCalendarList;
+        return calendarRepository.findAll();
     }
 
 
-    @GetMapping(value = "/calendar/{countryCode}/{bank}", produces = TEXT_PLAIN_VALUE)
+    @GetMapping(value = "api/calendar/{countryCode}/{bank}", produces = TEXT_PLAIN_VALUE)
     public String getCalendar(@PathVariable(value = "countryCode") String countryCode, @PathVariable(value = "bank") boolean bank) {
         GlencoreCalendar glencoreCalendar = calendarRepository.findByCountryCodeAndBank(countryCode, bank);
         return transformToICS(glencoreCalendar).toString();
@@ -55,7 +54,7 @@ public class CalendarController {
         calendar.getProperties().add(new ProdId("-//Glencore//iCal4j 1.0.2//EN"));
         calendar.getProperties().add(Version.VERSION_2_0);
         calendar.getProperties().add(CalScale.GREGORIAN);
-        glencoreCalendar.getGlencoreEventSet().forEach(event -> calendar.getComponents().add(createVEvent(event)));
+        glencoreCalendar.getEvents().forEach(event -> calendar.getComponents().add(createVEvent(event)));
         return calendar;
     }
 

@@ -41,10 +41,12 @@ public class GlobalCalendarApplication implements CommandLineRunner {
         net.fortuna.ical4j.model.Date tomorrow = new Date(java.util.Date.from(LocalDate.now()
                 .plusDays(1L).atStartOfDay(ZoneId.systemDefault()).toInstant()));
 
-        GlencoreEvent todayEvent = new GlencoreEvent(null, "1", LocalDate.now(), LocalDate.now().plusDays(1L), "Test todayEvent - 1");
+        GlencoreEvent sampleEvent1 = new GlencoreEvent(null, "1", LocalDate.now(), LocalDate.now().plusDays(1), "Holiday 1");
+        GlencoreEvent sampleEvent2 = new GlencoreEvent(null, "1", LocalDate.now().plusDays(1), LocalDate.now().plusDays(2), "Holiday 2");
+        GlencoreEvent bankHolidayEvent1 = new GlencoreEvent(null, "1", LocalDate.now().plusDays(3), LocalDate.now().plusDays(4), "Bank holiday");
 
-        repository.save(new GlencoreCalendar(null, "ES-Hol-1", "ES", false, Set.of(todayEvent)));
-        repository.save(new GlencoreCalendar(null, "ES-Bank-1", "ES", true, Set.of(todayEvent)));
+        repository.save(new GlencoreCalendar(null, "Spain, official holidays", "ES", false, 2019, Set.of(sampleEvent1, sampleEvent2)));
+        repository.save(new GlencoreCalendar(null, "Spain, bank holidays", "ES", true, 2019, Set.of(bankHolidayEvent1)));
 
         // fetch all customers
         System.out.println("Calendars found with findAll():");

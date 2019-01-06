@@ -23,7 +23,9 @@ public class GlencoreCalendar {
 
     private boolean bank;
 
-    private Set<GlencoreEvent> glencoreEventSet;
+    private int year;
+
+    private Set<GlencoreEvent> events;
 
     //TODO add states, hierarchy and aggregate.
 
