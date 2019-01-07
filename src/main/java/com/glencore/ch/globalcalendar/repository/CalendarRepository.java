@@ -10,4 +10,7 @@ public interface CalendarRepository extends MongoRepository<GlencoreCalendar, St
     Set<GlencoreCalendar> findAllByCountryCode(String firstName);
 
     GlencoreCalendar findByCountryCodeAndBank(String countryCode, boolean isBankHoliday);
+
+    GlencoreCalendar findByNameAndCountryCodeAndBankAndYear(String name, String countryCode, boolean bank, int year);
+
 }

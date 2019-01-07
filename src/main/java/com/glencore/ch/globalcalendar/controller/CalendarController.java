@@ -1,10 +1,12 @@
 package com.glencore.ch.globalcalendar.controller;
 
+import com.glencore.ch.globalcalendar.controller.dto.CalendarDto;
 import com.glencore.ch.globalcalendar.controller.dto.EventDto;
 import com.glencore.ch.globalcalendar.entity.GlencoreCalendar;
 import com.glencore.ch.globalcalendar.entity.GlencoreEvent;
 import com.glencore.ch.globalcalendar.repository.CalendarRepository;
 import com.glencore.ch.globalcalendar.repository.EventRepository;
+import com.google.common.base.Strings;
 import lombok.extern.slf4j.Slf4j;
 import net.fortuna.ical4j.model.Date;
 import net.fortuna.ical4j.model.component.VEvent;
@@ -47,6 +49,54 @@ public class CalendarController {
     public String getCalendar(@PathVariable(value = "countryCode") String countryCode, @PathVariable(value = "bank") boolean bank) {
         GlencoreCalendar glencoreCalendar = calendarRepository.findByCountryCodeAndBank(countryCode, bank);
         return transformToICS(glencoreCalendar).toString();
+    }
+
+    @PostMapping(value = "api/calendar")
+    @ResponseStatus(HttpStatus.OK)
+    public void addEvent(@RequestBody CalendarDto calendarDto) {
+        GlencoreCalendar calendar = new GlencoreCalendar(calendarDto);
+        calendar.setId(null);
+        calendarRepository.save(calendar);
+        log.info("Calendar {} created!", calendar);
+    }
+
+
+    @PutMapping(value = "api/calendar")
+    @ResponseStatus(HttpStatus.OK)
+    public void editEvent(@RequestBody CalendarDto calendarDto) {
+        GlencoreCalendar calendar = calendarRepository
+                .findById(calendarDto.getId()).orElseThrow(() -> new RuntimeException("No Result found"));
+
+        calendar.setBank(calendarDto.isBank());
+        calendar.setCountryCode(calendarDto.getCountryCode());
+        calendar.setName(calendarDto.getName());
+        calendar.setYear(calendarDto.getYear());
+        calendar.setEvents(calendarDto.getEvents().stream()
+                .map(GlencoreEvent::new).collect(Collectors.toSet()));
+
+        calendarRepository.save(calendar);
+        log.info("Calendar {} updated!", calendar);
+    }
+
+    @DeleteMapping(value = "api/calendar")
+    public void deleteCalendar(@RequestBody CalendarDto calendarDto) {
+        GlencoreCalendar glencoreCalendarToDelete;
+        //IDs are internal to mongo
+        if (Strings.isNullOrEmpty(calendarDto.getId())) {
+            glencoreCalendarToDelete = getByProperties(calendarDto);
+        } else {
+            glencoreCalendarToDelete = calendarRepository
+                    .findById(calendarDto.getId()).orElseThrow(() -> new RuntimeException("No Result found"));
+        }
+        calendarRepository.delete(glencoreCalendarToDelete);
+        log.info("Calendar name: {}, removed!!", glencoreCalendarToDelete);
+    }
+
+    private GlencoreCalendar getByProperties(CalendarDto calendarDto) {
+        return calendarRepository
+                .findByNameAndCountryCodeAndBankAndYear(calendarDto.getName()
+                        , calendarDto.getCountryCode()
+                        , calendarDto.isBank(), calendarDto.getYear());
     }
 
     private net.fortuna.ical4j.model.Calendar transformToICS(GlencoreCalendar glencoreCalendar) {

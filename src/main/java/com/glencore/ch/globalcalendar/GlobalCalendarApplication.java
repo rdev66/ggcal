@@ -3,6 +3,7 @@ package com.glencore.ch.globalcalendar;
 import com.glencore.ch.globalcalendar.entity.GlencoreCalendar;
 import com.glencore.ch.globalcalendar.entity.GlencoreEvent;
 import com.glencore.ch.globalcalendar.repository.CalendarRepository;
+import com.glencore.ch.globalcalendar.repository.EventRepository;
 import lombok.extern.slf4j.Slf4j;
 import net.fortuna.ical4j.model.Date;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,11 +20,13 @@ import java.util.Set;
 @SpringBootApplication
 public class GlobalCalendarApplication implements CommandLineRunner {
 
-    private final CalendarRepository repository;
+    private final CalendarRepository calendarRepository;
+    private final EventRepository eventRepository;
 
     @Autowired
-    public GlobalCalendarApplication(CalendarRepository repository) {
-        this.repository = repository;
+    public GlobalCalendarApplication(CalendarRepository calendarRepository, EventRepository eventRepository) {
+        this.calendarRepository = calendarRepository;
+        this.eventRepository = eventRepository;
     }
 
 
@@ -35,7 +38,7 @@ public class GlobalCalendarApplication implements CommandLineRunner {
     @Override
     public void run(String... args) {
 
-        repository.deleteAll();
+        calendarRepository.deleteAll();
 
         net.fortuna.ical4j.model.Date today = new Date(java.util.Date.from(Instant.now()));
         net.fortuna.ical4j.model.Date tomorrow = new Date(java.util.Date.from(LocalDate.now()
@@ -45,13 +48,18 @@ public class GlobalCalendarApplication implements CommandLineRunner {
         GlencoreEvent sampleEvent2 = new GlencoreEvent(null, "1", LocalDate.now().plusDays(1), LocalDate.now().plusDays(2), "Holiday 2");
         GlencoreEvent bankHolidayEvent1 = new GlencoreEvent(null, "1", LocalDate.now().plusDays(3), LocalDate.now().plusDays(4), "Bank holiday");
 
-        repository.save(new GlencoreCalendar(null, "Spain, official holidays", "ES", false, 2019, Set.of(sampleEvent1, sampleEvent2)));
-        repository.save(new GlencoreCalendar(null, "Spain, bank holidays", "ES", true, 2019, Set.of(bankHolidayEvent1)));
+        eventRepository.save(sampleEvent1);
+        eventRepository.save(sampleEvent2);
+        eventRepository.save(bankHolidayEvent1);
+
+        calendarRepository.save(new GlencoreCalendar(null, "Spain, official holidays", "ES", false, 2019, Set.of(sampleEvent1, sampleEvent2)));
+        calendarRepository.save(new GlencoreCalendar(null, "Spain, bank holidays", "ES", true, 2019, Set.of(bankHolidayEvent1)));
+
 
         // fetch all customers
         System.out.println("Calendars found with findAll():");
         System.out.println("-------------------------------");
-        for (GlencoreCalendar customer : repository.findAll()) {
+        for (GlencoreCalendar customer : calendarRepository.findAll()) {
             System.out.println(customer);
         }
         System.out.println();
@@ -59,11 +67,11 @@ public class GlobalCalendarApplication implements CommandLineRunner {
         // fetch an individual glencoreCalendar
         System.out.println("GlencoreCalendar found with findAllByCountryCode('ES'):");
         System.out.println("--------------------------------");
-        System.out.println(repository.findAllByCountryCode("ES"));
+        System.out.println(calendarRepository.findAllByCountryCode("ES"));
 
         System.out.println("Calendars found with findAllByCountryCodeAndBank('ES', false):");
         System.out.println("--------------------------------");
-        GlencoreCalendar glencoreCalendar = repository.findByCountryCodeAndBank("ES", false);
+        GlencoreCalendar glencoreCalendar = calendarRepository.findByCountryCodeAndBank("ES", false);
         System.out.println(glencoreCalendar);
     }
 }

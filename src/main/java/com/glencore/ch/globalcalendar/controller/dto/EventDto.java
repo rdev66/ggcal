@@ -12,12 +12,14 @@ import lombok.ToString;
 @NoArgsConstructor
 public class EventDto {
 
+    String id;
     String linkedCalendarId;
     String summary;
     String startDate;
     String endDate;
 
     public EventDto(GlencoreEvent glencoreEvent) {
+        this.id = glencoreEvent.getId();
         this.linkedCalendarId = glencoreEvent.getCalendarId();
         this.summary = glencoreEvent.getSummary();
         this.startDate = glencoreEvent.getStartDate().toString();
