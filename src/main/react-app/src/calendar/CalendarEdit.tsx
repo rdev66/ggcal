@@ -6,6 +6,8 @@ import {Button, Container, Form, FormGroup, Input, Label} from 'reactstrap';
 import AppNavbar from '../layout/AppNavbar';
 import Calendar from "../interfaces/Calendar";
 import {History} from 'history';
+import {instanceOf} from 'prop-types';
+import {Cookies, withCookies} from 'react-cookie';
 import GlencoreEvent from "../interfaces/GlencoreEvent";
 
 
@@ -17,14 +19,27 @@ interface Props extends RouteComponentProps {
     // your props validation
     match: match<Identifiable>;
     history: History;
+    cookies: Cookies;
+}
+
+interface User {
+    id: string;
+    name: string;
+    email: string;
 }
 
 interface State {
     // state types
     calendarItem: Calendar;
+    csrfToken: string;
+    user: User;
 }
 
 class CalendarEdit extends React.Component<Props, State> {
+
+    static propTypes = {
+        cookies: instanceOf(Cookies).isRequired
+    };
 
     emptyCalendarItem: Calendar = {
         id: '',
@@ -37,8 +52,11 @@ class CalendarEdit extends React.Component<Props, State> {
 
     constructor(props: Props) {
         super(props);
+        const {cookies} = props;
         this.state = {
-            calendarItem: this.emptyCalendarItem
+            calendarItem: this.emptyCalendarItem,
+            csrfToken: cookies.get('XSRF-TOKEN'),
+            user: {id: '', name: '', email: ''}
         };
         this.handlePropertyChange = this.handlePropertyChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
@@ -46,9 +64,18 @@ class CalendarEdit extends React.Component<Props, State> {
 
     async componentDidMount() {
         if (this.props.match.params.id !== 'new') {
-            const group = await (await fetch(`/api/group/${this.props.match.params.id}`)).json();
-            this.setState({calendarItem: group});
+            try {
+                const calendar = await (await fetch(`/api/calendar/${this.props.match.params.id}`
+                    , {credentials: 'include'})).json();
+                this.setState({calendarItem: calendar});
+            } catch (error) {
+                this.props.history.push('/');
+            }
         }
+
+        const response = await fetch('/api/user', {credentials: 'include'});
+        const body = await response.text();
+        this.setState({user: JSON.parse(body)})
     }
 
     handlePropertyChange(event: React.ChangeEvent<HTMLInputElement>) {
@@ -64,11 +91,12 @@ class CalendarEdit extends React.Component<Props, State> {
 
     async handleSubmit(event: React.FormEvent) {
         event.preventDefault();
-        const {calendarItem} = this.state;
+        const {calendarItem, csrfToken} = this.state;
 
         await fetch('/api/calendar', {
             method: (calendarItem.id) ? 'PUT' : 'POST',
             headers: {
+                'X-XSRF-TOKEN': csrfToken,
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
             },
@@ -82,7 +110,7 @@ class CalendarEdit extends React.Component<Props, State> {
         const title = <h2>{calendarItem.id ? 'Edit Calendar' : 'Add Calendar'}</h2>;
 
         return <div>
-            <AppNavbar/>
+            <AppNavbar user={this.state.user}/>
             <Container>
                 {title}
                 <Form onSubmit={this.handleSubmit}>
@@ -116,6 +144,4 @@ class CalendarEdit extends React.Component<Props, State> {
     }
 }
 
-const WithRouterComponentClass = withRouter(CalendarEdit);
-
-export default WithRouterComponentClass;
+export default withCookies(withRouter(CalendarEdit));

@@ -4,8 +4,10 @@ import com.glencore.ch.globalcalendar.controller.dto.CalendarDto;
 import com.glencore.ch.globalcalendar.controller.dto.EventDto;
 import com.glencore.ch.globalcalendar.entity.GlencoreCalendar;
 import com.glencore.ch.globalcalendar.entity.GlencoreEvent;
+import com.glencore.ch.globalcalendar.entity.User;
 import com.glencore.ch.globalcalendar.repository.CalendarRepository;
 import com.glencore.ch.globalcalendar.repository.EventRepository;
+import com.glencore.ch.globalcalendar.repository.UserRepository;
 import com.google.common.base.Strings;
 import lombok.extern.slf4j.Slf4j;
 import net.fortuna.ical4j.model.Date;
@@ -15,57 +17,92 @@ import net.fortuna.ical4j.model.property.ProdId;
 import net.fortuna.ical4j.model.property.Version;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
+import java.net.URISyntaxException;
+import java.security.Principal;
 import java.text.ParseException;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.springframework.http.MediaType.TEXT_PLAIN_VALUE;
 
 @Slf4j
 @RestController
+@RequestMapping("/api")
 public class CalendarController {
 
     private final CalendarRepository calendarRepository;
     private final EventRepository eventRepository;
+    //
+    private UserRepository userRepository;
 
     @Autowired
-    public CalendarController(CalendarRepository calendarRepository, EventRepository eventRepository) {
+    public CalendarController(CalendarRepository calendarRepository, EventRepository eventRepository, UserRepository userRepository) {
         this.calendarRepository = calendarRepository;
         this.eventRepository = eventRepository;
+        this.userRepository = userRepository;
     }
 
 
-    @GetMapping(value = "api/calendars")
+    @GetMapping(value = "/calendars")
     public List<GlencoreCalendar> listAllCalendars() {
         return calendarRepository.findAll();
     }
 
+    @GetMapping("/userCalendars")
+    Collection<GlencoreCalendar> groups(Principal principal) {
+        return calendarRepository.findAllByCreatedBy(principal.getName());
+    }
 
-    @GetMapping(value = "api/calendar/{countryCode}/{bank}", produces = TEXT_PLAIN_VALUE)
+    //Actual calendar subscription.
+    @GetMapping(value = "/calendar/{countryCode}/{bank}", produces = TEXT_PLAIN_VALUE)
     public String getCalendar(@PathVariable(value = "countryCode") String countryCode, @PathVariable(value = "bank") boolean bank) {
         GlencoreCalendar glencoreCalendar = calendarRepository.findByCountryCodeAndBank(countryCode, bank);
         return transformToICS(glencoreCalendar).toString();
     }
 
-    @PostMapping(value = "api/calendar")
+    @GetMapping(value = "/calendar/{id}", produces = TEXT_PLAIN_VALUE)
+    public ResponseEntity<?> getCalendar(@PathVariable(value = "id") String id) {
+        Optional<GlencoreCalendar> glencoreCalendar = calendarRepository.findById(id);
+        return glencoreCalendar.map(response -> ResponseEntity.ok().body(transformToICS(response).toString()))
+                .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    }
+
+    @PostMapping(value = "/calendar")
     @ResponseStatus(HttpStatus.OK)
-    public void addEvent(@RequestBody CalendarDto calendarDto) {
+    public void addCalendar(@Valid @RequestBody CalendarDto calendarDto,
+                            @AuthenticationPrincipal OAuth2User principal) throws URISyntaxException {
+        log.info("Request to add calendar: {}", calendarDto);
+
+        Map<String, Object> details = principal.getAttributes();
+        String userId = details.get("sub").toString();
+        // check to see if user already exists
+        Optional<User> user = userRepository.findById(userId);
         GlencoreCalendar calendar = new GlencoreCalendar(calendarDto);
+
+        calendar.setCreatedBy(user.orElse(new User(userId,
+                details.get("name").toString(), details.get("email").toString())));
+
         calendar.setId(null);
         calendarRepository.save(calendar);
         log.info("Calendar {} created!", calendar);
     }
 
 
-    @PutMapping(value = "api/calendar")
+    @PutMapping(value = "/calendar")
     @ResponseStatus(HttpStatus.OK)
-    public void editEvent(@RequestBody CalendarDto calendarDto) {
+    public ResponseEntity<GlencoreCalendar> editCalendar(@Valid @RequestBody CalendarDto calendarDto) {
+        log.info("Request to update calendar: {}", calendarDto);
+
         GlencoreCalendar calendar = calendarRepository
-                .findById(calendarDto.getId()).orElseThrow(() -> new RuntimeException("No Result found"));
+                .findById(calendarDto.getId())
+                .orElseThrow(() -> new RuntimeException("No Result found"));
 
         calendar.setBank(calendarDto.isBank());
         calendar.setCountryCode(calendarDto.getCountryCode());
@@ -74,12 +111,14 @@ public class CalendarController {
         calendar.setEvents(calendarDto.getEvents().stream()
                 .map(GlencoreEvent::new).collect(Collectors.toSet()));
 
-        calendarRepository.save(calendar);
+        GlencoreCalendar result = calendarRepository.save(calendar);
         log.info("Calendar {} updated!", calendar);
+        return ResponseEntity.ok().body(result);
+
     }
 
-    @DeleteMapping(value = "api/calendar")
-    public void deleteCalendar(@RequestBody CalendarDto calendarDto) {
+    @DeleteMapping(value = "/calendar")
+    public ResponseEntity<?> deleteCalendar(@RequestBody CalendarDto calendarDto) {
         GlencoreCalendar glencoreCalendarToDelete;
         //IDs are internal to mongo
         if (Strings.isNullOrEmpty(calendarDto.getId())) {
@@ -90,6 +129,7 @@ public class CalendarController {
         }
         calendarRepository.delete(glencoreCalendarToDelete);
         log.info("Calendar name: {}, removed!!", glencoreCalendarToDelete);
+        return ResponseEntity.ok().build();
     }
 
     private GlencoreCalendar getByProperties(CalendarDto calendarDto) {
@@ -122,7 +162,7 @@ public class CalendarController {
 
     @PostMapping(value = "/event")
     @ResponseStatus(HttpStatus.CREATED)
-    public void addEvent(@RequestBody EventDto eventDto) {
+    public void addCalendar(@RequestBody EventDto eventDto) {
         eventRepository.save(new GlencoreEvent(eventDto));
     }
 

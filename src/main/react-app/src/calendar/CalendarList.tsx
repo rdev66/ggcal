@@ -1,25 +1,46 @@
 import {Button, ButtonGroup, Container, Table} from 'reactstrap';
 import AppNavbar from '../layout/AppNavbar';
-import {Link} from 'react-router-dom';
+import {Link, RouteComponentProps, withRouter} from 'react-router-dom';
 import * as React from "react";
 import Calendar from "../interfaces/Calendar";
+import {instanceOf} from 'prop-types';
+import {Cookies, withCookies} from 'react-cookie';
 
-
-interface Props {
+interface Props extends RouteComponentProps {
     // your props validation
+    cookies: Cookies;
+}
+
+interface User {
+    id: string;
+    name: string;
+    email: string;
 }
 
 interface State {
     // state types
     isLoading: boolean;
     calendars: Calendar[];
+    csrfToken: string;
+    user: User;
 }
 
-export default class CalendarList extends React.Component<Props, State> {
+class CalendarList extends React.Component<Props, State> {
+
+    static propTypes = {
+        cookies: instanceOf(Cookies).isRequired
+    };
 
     constructor(props: Props) {
         super(props);
-        this.state = ({isLoading: true, calendars: []});
+        const {cookies} = props;
+
+        this.state = {
+            calendars: [],
+            isLoading: true,
+            csrfToken: cookies.get('XSRF-TOKEN'),
+            user: {id: '', name: '', email: ''}
+        };
         this.remove = this.remove.bind(this);
     }
 
@@ -27,9 +48,10 @@ export default class CalendarList extends React.Component<Props, State> {
 
         this.setState({isLoading: true});
 
-        fetch('api/calendars')
+        fetch('api/calendars', {credentials: 'include'})
             .then(response => response.json())
-            .then(data => this.setState({calendars: data, isLoading: false}));
+            .then(data => this.setState({calendars: data, isLoading: false}))
+            .catch(() => this.props.history.push('/'));
     }
 
     async remove(calendarItem: Calendar) {
@@ -37,9 +59,11 @@ export default class CalendarList extends React.Component<Props, State> {
         await fetch('api/calendar', {
             method: 'DELETE',
             headers: {
+                'X-XSRF-TOKEN': this.state.csrfToken,
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
             },
+            credentials: 'include',
             body: JSON.stringify(calendarItem)
         }).then(() => {
             const updatedCalendars = [...this.state.calendars].filter(i => i.id !== calendarItem.id);
@@ -81,7 +105,7 @@ export default class CalendarList extends React.Component<Props, State> {
 
         return (
             <div>
-                <AppNavbar/>
+                <AppNavbar user={this.state.user}/>
                 <Container fluid>
                     <div className="float-right">
                         <Button color="success" tag={Link} to="/calendar/new">Add Calendar</Button>
@@ -105,3 +129,5 @@ export default class CalendarList extends React.Component<Props, State> {
         );
     }
 }
+
+export default withCookies(withRouter(CalendarList));

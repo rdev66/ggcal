@@ -24,7 +24,7 @@
     <artifactId>GlobalCalendar</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>GlobalCalendar</name>
-    <description>Demo project for Spring Boot</description>
+    <description>GGCal PoC</description>
 
     <properties>
         <java.version>1.8</java.version>
@@ -35,6 +35,24 @@
 
 
     <dependencies>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-config</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-oauth2-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-oauth2-jose</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-mongodb</artifactId>

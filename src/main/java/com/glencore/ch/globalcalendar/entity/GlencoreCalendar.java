@@ -29,6 +29,8 @@ public class GlencoreCalendar {
 
     private Set<GlencoreEvent> events;
 
+    private User createdBy;
+
     //TODO add states, hierarchy and aggregate.
 
 

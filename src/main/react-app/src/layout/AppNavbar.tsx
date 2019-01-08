@@ -3,8 +3,16 @@ import {Collapse, Nav, Navbar, NavbarBrand, NavbarToggler} from 'reactstrap';
 import {Link} from 'react-router-dom';
 
 
-interface Props {
+interface User {
+    id: string;
+    name: string;
+    email: string;
 }
+
+interface Props {
+    user: User;
+}
+
 
 interface State {
     // state types
@@ -28,7 +36,7 @@ export default class AppNavbar extends React.Component<Props, State> {
             <NavbarToggler onClick={this.toggle}/>
             <Collapse isOpen={this.state.isOpen} navbar>
                 <Nav className="ml-auto" navbar>
-                    <NavbarBrand tag={Link} to="/">Logged User</NavbarBrand>
+                    <NavbarBrand tag={Link} to="/">{this.props.user.name}</NavbarBrand>
                 </Nav>
             </Collapse>
         </Navbar>;

@@ -4,6 +4,7 @@ import './App.css';
 import Home from '../layout/Home';
 import CalendarList from '../calendar/CalendarList';
 import CalendarEdit from '../calendar/CalendarEdit';
+import {CookiesProvider} from 'react-cookie';
 
 
 interface Props {
@@ -17,13 +18,15 @@ interface State {
 class App extends Component<Props, State> {
     render() {
         return (
-            <Router>
-                <Switch>
-                    <Route path='/' exact={true} component={Home}/>
-                    <Route path='/calendars' exact={true} component={CalendarList}/>
-                    <Route path='/calendar/:id' component={CalendarEdit}/>
-                </Switch>
-            </Router>
+            <CookiesProvider>
+                <Router>
+                    <Switch>
+                        <Route path='/' exact={true} component={Home}/>
+                        <Route path='/calendars' exact={true} component={CalendarList}/>
+                        <Route path='/calendar/:id' component={CalendarEdit}/>
+                    </Switch>
+                </Router>
+            </CookiesProvider>
         );
     }
 }
