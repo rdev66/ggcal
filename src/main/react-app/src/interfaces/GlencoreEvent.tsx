@@ -1,9 +1,7 @@
-interface GlencoreEvent {
-    id: string
+import Event from './Event'
+
+interface GlencoreEvent extends Event {
     calendarId: string;
-    startDate: string;
-    endDate: string;
-    summary: string;
 }
 
 export default GlencoreEvent;

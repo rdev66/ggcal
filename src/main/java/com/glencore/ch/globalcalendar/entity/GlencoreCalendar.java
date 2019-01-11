@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 @Getter
 @Setter
 @EqualsAndHashCode
+@Builder
 public class GlencoreCalendar {
 
     @Id
@@ -30,6 +31,8 @@ public class GlencoreCalendar {
     private Set<GlencoreEvent> events;
 
     private User createdBy;
+
+    private String externalCalendarUrl;
 
     //TODO add states, hierarchy and aggregate.
 

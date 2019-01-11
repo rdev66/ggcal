@@ -21,8 +21,8 @@ public class EventDto {
     public EventDto(GlencoreEvent glencoreEvent) {
         this.id = glencoreEvent.getId();
         this.linkedCalendarId = glencoreEvent.getCalendarId();
-        this.summary = glencoreEvent.getSummary();
-        this.startDate = glencoreEvent.getStartDate().toString();
-        this.endDate = glencoreEvent.getEndDate().toString();
+        this.summary = glencoreEvent.getTitle();
+        this.startDate = glencoreEvent.getStart().toString();
+        this.endDate = glencoreEvent.getEnd().toString();
     }
 }

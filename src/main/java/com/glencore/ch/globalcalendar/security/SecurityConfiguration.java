@@ -1,6 +1,7 @@
 package com.glencore.ch.globalcalendar.security;
 
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -29,6 +30,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     }
 
     @Bean
+    @Profile("dev") //Only to redirect back to localhost:3000 during development.
     public RequestCache refererRequestCache() {
         return new HttpSessionRequestCache() {
             @Override

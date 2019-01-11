@@ -87,11 +87,11 @@ class CalendarList extends React.Component<Props, State> {
                         year: 'numeric',
                         month: 'long',
                         day: '2-digit'
-                    }).format(new Date(event.startDate))}: {new Intl.DateTimeFormat('en-US', {
+                    }).format(new Date(event.start))}: {new Intl.DateTimeFormat('en-US', {
                         year: 'numeric',
                         month: 'long',
                         day: '2-digit'
-                    }).format(new Date(event.endDate))} {event.summary}</div>
+                    }).format(new Date(event.end))} {event.title}</div>
                 })}</td>
                 <td>{calendar.bank.toString()}</td>
                 <td>
@@ -105,7 +105,7 @@ class CalendarList extends React.Component<Props, State> {
 
         return (
             <div>
-                <AppNavbar user={this.state.user}/>
+                <AppNavbar user={this.state.user} csrfToken={this.state.csrfToken}/>
                 <Container fluid>
                     <div className="float-right">
                         <Button color="success" tag={Link} to="/calendar/new">Add Calendar</Button>

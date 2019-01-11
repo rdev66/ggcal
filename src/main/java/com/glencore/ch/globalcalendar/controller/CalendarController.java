@@ -9,8 +9,14 @@ import com.glencore.ch.globalcalendar.repository.CalendarRepository;
 import com.glencore.ch.globalcalendar.repository.EventRepository;
 import com.glencore.ch.globalcalendar.repository.UserRepository;
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
+import net.fortuna.ical4j.data.CalendarBuilder;
+import net.fortuna.ical4j.data.ParserException;
+import net.fortuna.ical4j.model.Calendar;
+import net.fortuna.ical4j.model.ComponentList;
 import net.fortuna.ical4j.model.Date;
+import net.fortuna.ical4j.model.component.CalendarComponent;
 import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.property.CalScale;
 import net.fortuna.ical4j.model.property.ProdId;
@@ -23,7 +29,11 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.security.Principal;
 import java.text.ParseException;
 import java.time.format.DateTimeFormatter;
@@ -87,11 +97,53 @@ public class CalendarController {
         GlencoreCalendar calendar = new GlencoreCalendar(calendarDto);
 
         calendar.setCreatedBy(user.orElse(new User(userId,
-                details.get("name").toString(), details.get("email").toString())));
+                details.get("name").toString(), details.get("email").toString(), false, false, "ES")));
 
         calendar.setId(null);
+
+        List<GlencoreEvent> importedEvents = this.importExternalCalendarEvents(calendarDto.getExternalCalendarUrl());
+        calendar.getEvents().addAll(importedEvents);
+
+        log.info("{} Events imported from {}  and linked to calendar {}"
+                , importedEvents.size(), calendarDto.getExternalCalendarUrl(), calendar.getName());
+
         calendarRepository.save(calendar);
         log.info("Calendar {} created!", calendar);
+    }
+
+
+    private List<GlencoreEvent> importExternalCalendarEvents(String url) {
+
+        URL calUrl;
+        try {
+            //"https://fcal.ch/privat/fcal_holidays.ics?hl=en&klasse=5&geo=2861"
+            calUrl = new URL(url);
+        } catch (MalformedURLException mue) {
+            log.error("Bad URL", mue);
+            return null;
+        }
+
+        try (InputStreamReader in = new InputStreamReader(calUrl.openStream())) {
+
+            CalendarBuilder builder = new CalendarBuilder();
+            Calendar importedCal = builder.build(in);
+            ComponentList<CalendarComponent> cs = importedCal.getComponents();
+
+            return cs.stream().filter(component -> component instanceof VEvent)
+                    .peek(this::prettyPrintEvent) //TODO remove when you feel you're ready.
+                    .map(event -> new GlencoreEvent((VEvent) event))
+                    .collect(Collectors.toList());
+        } catch (IOException ioe) {
+            log.error("IOE", ioe);
+        } catch (ParserException ioe) {
+            log.error("PE", ioe);
+        }
+        return Lists.newArrayList();
+    }
+
+    private void prettyPrintEvent(CalendarComponent calendarComponent) {
+        VEvent event = (VEvent) calendarComponent;
+        log.debug("Event name: {}, dates: from {} - to {} ", event.getSummary(), event.getStartDate().getDate(), event.getEndDate().getDate());
     }
 
 
@@ -152,8 +204,8 @@ public class CalendarController {
         try {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
 
-            return new VEvent(new Date(formatter.format(event.getStartDate()), "yyyyMMdd")
-                    , new Date(formatter.format(event.getEndDate()), "yyyyMMdd"), event.getSummary());
+            return new VEvent(new Date(formatter.format(event.getStart()), "yyyyMMdd")
+                    , new Date(formatter.format(event.getEnd()), "yyyyMMdd"), event.getTitle());
         } catch (ParseException pe) {
             log.error("Error parsing event date", pe);
             throw new RuntimeException(pe);

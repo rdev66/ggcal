@@ -3,9 +3,11 @@ package com.glencore.ch.globalcalendar.entity;
 import com.glencore.ch.globalcalendar.controller.dto.EventDto;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
+import net.fortuna.ical4j.model.component.VEvent;
 import org.springframework.data.annotation.Id;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 
 @ToString
 @EqualsAndHashCode
@@ -21,14 +23,22 @@ public class GlencoreEvent {
 
     private String calendarId;
 
-    LocalDate startDate;
-    LocalDate endDate;
-    String summary;
+    LocalDate start;
+    LocalDate end;
+    String title;
 
     public GlencoreEvent(EventDto eventDto) {
         this.calendarId = eventDto.getLinkedCalendarId();
-        this.startDate = LocalDate.parse(eventDto.getStartDate());
-        this.endDate = LocalDate.parse(eventDto.getEndDate());
-        this.summary = eventDto.getSummary();
+        this.start = LocalDate.parse(eventDto.getStartDate());
+        this.end = LocalDate.parse(eventDto.getEndDate());
+        this.title = eventDto.getSummary();
+    }
+
+    public GlencoreEvent(VEvent newVEvent) {
+        this.start = newVEvent.getStartDate().getDate()
+                .toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        this.end = newVEvent.getStartDate().getDate()
+                .toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        this.title = "IMPORTED: " + newVEvent.getSummary().getValue();
     }
 }

@@ -96,9 +96,12 @@ class Home extends React.Component<Props, State> {
             </div> :
             <Button color="primary" onClick={this.login}>Login</Button>;
 
+        //TODO https://tylermcginnis.com/react-router-pass-props-to-components/
+        //Manage login through Home App component and pass user as props to AppNavbar; also pass ref. to logout function.
+
         return (
             <div>
-                <AppNavbar user={this.state.user}/>
+                <AppNavbar user={this.state.user} csrfToken={this.state.csrfToken}/>
                 <Container fluid>
                     {message}
                     {button}

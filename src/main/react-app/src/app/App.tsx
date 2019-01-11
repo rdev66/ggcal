@@ -5,6 +5,7 @@ import Home from '../layout/Home';
 import CalendarList from '../calendar/CalendarList';
 import CalendarEdit from '../calendar/CalendarEdit';
 import {CookiesProvider} from 'react-cookie';
+import CalendarView from "../calendar/CalendarView";
 
 
 interface Props {
@@ -24,6 +25,7 @@ class App extends Component<Props, State> {
                         <Route path='/' exact={true} component={Home}/>
                         <Route path='/calendars' exact={true} component={CalendarList}/>
                         <Route path='/calendar/:id' component={CalendarEdit}/>
+                        <Route path='/calendars/view' exact={true} component={CalendarView}/>
                     </Switch>
                 </Router>
             </CookiesProvider>

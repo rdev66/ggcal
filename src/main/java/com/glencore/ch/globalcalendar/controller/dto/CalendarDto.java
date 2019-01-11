@@ -20,6 +20,8 @@ public class CalendarDto {
     boolean bank;
     String countryCode;
     int year;
+    String externalCalendarUrl;
+
 
     Set<EventDto> events;
 
@@ -29,6 +31,7 @@ public class CalendarDto {
         this.bank = calendar.isBank();
         this.countryCode = calendar.getCountryCode();
         this.year = calendar.getYear();
+        this.externalCalendarUrl = calendar.getExternalCalendarUrl();
         this.events = calendar.getEvents().stream().map(EventDto::new).collect(Collectors.toSet());
     }
 }

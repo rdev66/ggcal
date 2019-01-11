@@ -7,6 +7,7 @@ interface Calendar {
     bank: boolean;
     year: number;
     events: GlencoreEvent[];
+    externalCalendarUrl: URL;
 }
 
 export default Calendar;

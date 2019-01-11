@@ -47,7 +47,8 @@ class CalendarEdit extends React.Component<Props, State> {
         countryCode: '',
         bank: false,
         year: 0,
-        events: [] as GlencoreEvent[]
+        events: [] as GlencoreEvent[],
+        externalCalendarUrl: {} as URL
     };
 
     constructor(props: Props) {
@@ -61,6 +62,7 @@ class CalendarEdit extends React.Component<Props, State> {
         this.handlePropertyChange = this.handlePropertyChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
     }
+
 
     async componentDidMount() {
         if (this.props.match.params.id !== 'new') {
@@ -110,7 +112,7 @@ class CalendarEdit extends React.Component<Props, State> {
         const title = <h2>{calendarItem.id ? 'Edit Calendar' : 'Add Calendar'}</h2>;
 
         return <div>
-            <AppNavbar user={this.state.user}/>
+            <AppNavbar user={this.state.user} csrfToken={this.state.csrfToken}/>
             <Container>
                 {title}
                 <Form onSubmit={this.handleSubmit}>
@@ -133,6 +135,12 @@ class CalendarEdit extends React.Component<Props, State> {
                         <Label for="bank">Bank</Label>
                         <Input type="text" name="bank" id="bank" value={calendarItem.bank.toString() || ''}
                                onChange={this.handlePropertyChange} autoComplete="bank-level1"/>
+                    </FormGroup>
+                    <FormGroup>
+                        <Label for="bank">Import external calendar file</Label>
+                        <Input type="text" name="externalCalendarUrl" id="externalCalendarUrl"
+                               value={calendarItem.externalCalendarUrl.href || ''}
+                               onChange={this.handlePropertyChange} autoComplete="externalCaldarUrl-level1"/>
                     </FormGroup>
                     <FormGroup>
                         <Button color="primary" type="submit">Save</Button>{' '}
