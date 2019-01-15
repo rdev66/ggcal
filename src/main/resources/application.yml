@@ -10,5 +10,20 @@ spring:
         provider:
           okta:
             issuer-uri: https://dev-621737.oktapreview.com/oauth2/default
+  mail:
+    default-encoding: UTF-8
+    host: smtp.gmail.com
+    port: 587
+    username: test
+    password: test
+    properties.mail.smtp:
+      auth: true
+      starttls.enable: true
+      ssl.trust: smtp.gmail.com
+    protocol: smtp
+    test-connection: false
+
   profiles:
     active: @spring.profiles.active@
+
+
