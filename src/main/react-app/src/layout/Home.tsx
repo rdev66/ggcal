@@ -92,7 +92,7 @@ class Home extends React.Component<Props, State> {
             <div>
                 <Button color="link"><Link to="/calendars">Manage Calendars</Link></Button>
                 <br/>
-                <Button color="link" onClick={this.logout}>Logout</Button>
+                <Button color="secondary" onClick={this.logout}>Logout</Button>
             </div> :
             <Button color="primary" onClick={this.login}>Login</Button>;
 
@@ -101,7 +101,7 @@ class Home extends React.Component<Props, State> {
 
         return (
             <div>
-                <AppNavbar user={this.state.user} csrfToken={this.state.csrfToken}/>
+                <AppNavbar user={this.state.user}/>
                 <Container fluid>
                     {message}
                     {button}

@@ -4,10 +4,9 @@ interface Calendar {
     id: string
     name: string;
     countryCode: string;
-    bank: boolean;
     year: number;
     events: GlencoreEvent[];
-    externalCalendarUrl: URL;
+    externalCalendarUrl: string;
 }
 
 export default Calendar;

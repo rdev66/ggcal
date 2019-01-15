@@ -4,18 +4,15 @@ import com.glencore.ch.globalcalendar.entity.GlencoreCalendar;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.List;
-import java.util.Set;
 
 public interface CalendarRepository extends MongoRepository<GlencoreCalendar, String> {
 
-    Set<GlencoreCalendar> findAllByCountryCode(String countryCode);
+    GlencoreCalendar findByCountryCodeAndYear(String countryCode, int year);
 
-    GlencoreCalendar findByCountryCodeAndBank(String countryCode, boolean isBankHoliday);
-
-    GlencoreCalendar findByCountryCodeAndBankIsTrue(String countryCode);
-
-
-    GlencoreCalendar findByNameAndCountryCodeAndBankAndYear(String name, String countryCode, boolean bank, int year);
+    GlencoreCalendar findByNameAndCountryCodeAndYear(String name, String countryCode, int year);
 
     List<GlencoreCalendar> findAllByCreatedBy(String id);
+
+    List<GlencoreCalendar> findAllByCountryCode(String countryCode);
+
 }

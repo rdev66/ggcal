@@ -9,11 +9,9 @@ import com.glencore.ch.globalcalendar.repository.CalendarRepository;
 import com.glencore.ch.globalcalendar.repository.EventRepository;
 import com.glencore.ch.globalcalendar.repository.UserRepository;
 import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import net.fortuna.ical4j.data.CalendarBuilder;
 import net.fortuna.ical4j.data.ParserException;
-import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.ComponentList;
 import net.fortuna.ical4j.model.Date;
 import net.fortuna.ical4j.model.component.CalendarComponent;
@@ -71,16 +69,23 @@ public class CalendarController {
     }
 
     //Actual calendar subscription.
-    @GetMapping(value = "/calendar/{countryCode}/{bank}", produces = TEXT_PLAIN_VALUE)
-    public String getCalendar(@PathVariable(value = "countryCode") String countryCode, @PathVariable(value = "bank") boolean bank) {
-        GlencoreCalendar glencoreCalendar = calendarRepository.findByCountryCodeAndBank(countryCode, bank);
+    @GetMapping(value = "/calendar/{countryCode}/{year}", produces = TEXT_PLAIN_VALUE)
+    public String getCalendar(@PathVariable(value = "countryCode") String countryCode, @PathVariable(value = "year") Integer year) {
+        GlencoreCalendar glencoreCalendar = calendarRepository.findByCountryCodeAndYear(countryCode, year);
         return transformToICS(glencoreCalendar).toString();
     }
 
-    @GetMapping(value = "/calendar/{id}", produces = TEXT_PLAIN_VALUE)
+    @GetMapping(value = "/subscription/{id}", produces = TEXT_PLAIN_VALUE)
     public ResponseEntity<?> getCalendar(@PathVariable(value = "id") String id) {
         Optional<GlencoreCalendar> glencoreCalendar = calendarRepository.findById(id);
         return glencoreCalendar.map(response -> ResponseEntity.ok().body(transformToICS(response).toString()))
+                .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    }
+
+    @GetMapping(value = "/calendar/{id}")
+    public ResponseEntity<?> getCalendarObject(@PathVariable(value = "id") String id) {
+        Optional<GlencoreCalendar> glencoreCalendar = calendarRepository.findById(id);
+        return glencoreCalendar.map(response -> ResponseEntity.ok().body(response))
                 .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
@@ -101,18 +106,21 @@ public class CalendarController {
 
         calendar.setId(null);
 
-        List<GlencoreEvent> importedEvents = this.importExternalCalendarEvents(calendarDto.getExternalCalendarUrl());
-        calendar.getEvents().addAll(importedEvents);
-
-        log.info("{} Events imported from {}  and linked to calendar {}"
-                , importedEvents.size(), calendarDto.getExternalCalendarUrl(), calendar.getName());
+        Optional<List<GlencoreEvent>> importedEvents = this.importExternalCalendarEvents(calendarDto.getExternalCalendarUrl());
+        importedEvents.ifPresent(events -> addAllEvents(calendar, events));
 
         calendarRepository.save(calendar);
         log.info("Calendar {} created!", calendar);
     }
 
+    private void addAllEvents(GlencoreCalendar glencoreCalendar, List<GlencoreEvent> importedEvents) {
+        glencoreCalendar.getEvents().addAll(importedEvents);
+        log.info("{} Events imported  and linked to calendar {}"
+                , importedEvents.size()
+                , glencoreCalendar.getName());
+    }
 
-    private List<GlencoreEvent> importExternalCalendarEvents(String url) {
+    private Optional<List<GlencoreEvent>> importExternalCalendarEvents(String url) {
 
         URL calUrl;
         try {
@@ -120,25 +128,23 @@ public class CalendarController {
             calUrl = new URL(url);
         } catch (MalformedURLException mue) {
             log.error("Bad URL", mue);
-            return null;
+            return Optional.empty();
         }
 
         try (InputStreamReader in = new InputStreamReader(calUrl.openStream())) {
 
-            CalendarBuilder builder = new CalendarBuilder();
-            Calendar importedCal = builder.build(in);
-            ComponentList<CalendarComponent> cs = importedCal.getComponents();
-
-            return cs.stream().filter(component -> component instanceof VEvent)
+            ComponentList<CalendarComponent> cs = new CalendarBuilder().build(in).getComponents();
+            return Optional.of(cs.stream().filter(component -> component instanceof VEvent)
                     .peek(this::prettyPrintEvent) //TODO remove when you feel you're ready.
                     .map(event -> new GlencoreEvent((VEvent) event))
-                    .collect(Collectors.toList());
+                    .sorted()
+                    .collect(Collectors.toList()));
         } catch (IOException ioe) {
             log.error("IOE", ioe);
         } catch (ParserException ioe) {
             log.error("PE", ioe);
         }
-        return Lists.newArrayList();
+        return Optional.empty();
     }
 
     private void prettyPrintEvent(CalendarComponent calendarComponent) {
@@ -156,7 +162,6 @@ public class CalendarController {
                 .findById(calendarDto.getId())
                 .orElseThrow(() -> new RuntimeException("No Result found"));
 
-        calendar.setBank(calendarDto.isBank());
         calendar.setCountryCode(calendarDto.getCountryCode());
         calendar.setName(calendarDto.getName());
         calendar.setYear(calendarDto.getYear());
@@ -186,9 +191,9 @@ public class CalendarController {
 
     private GlencoreCalendar getByProperties(CalendarDto calendarDto) {
         return calendarRepository
-                .findByNameAndCountryCodeAndBankAndYear(calendarDto.getName()
+                .findByNameAndCountryCodeAndYear(calendarDto.getName()
                         , calendarDto.getCountryCode()
-                        , calendarDto.isBank(), calendarDto.getYear());
+                        , calendarDto.getYear());
     }
 
     private net.fortuna.ical4j.model.Calendar transformToICS(GlencoreCalendar glencoreCalendar) {

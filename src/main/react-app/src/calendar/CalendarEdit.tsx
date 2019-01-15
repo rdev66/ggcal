@@ -10,7 +10,6 @@ import {instanceOf} from 'prop-types';
 import {Cookies, withCookies} from 'react-cookie';
 import GlencoreEvent from "../interfaces/GlencoreEvent";
 
-
 interface Identifiable {
     id: string;
 }
@@ -31,7 +30,7 @@ interface User {
 interface State {
     // state types
     calendarItem: Calendar;
-    csrfToken: string;
+    //csrfToken: string;
     user: User;
 }
 
@@ -45,10 +44,9 @@ class CalendarEdit extends React.Component<Props, State> {
         id: '',
         name: '',
         countryCode: '',
-        bank: false,
         year: 0,
         events: [] as GlencoreEvent[],
-        externalCalendarUrl: {} as URL
+        externalCalendarUrl: ''
     };
 
     constructor(props: Props) {
@@ -56,7 +54,6 @@ class CalendarEdit extends React.Component<Props, State> {
         const {cookies} = props;
         this.state = {
             calendarItem: this.emptyCalendarItem,
-            csrfToken: cookies.get('XSRF-TOKEN'),
             user: {id: '', name: '', email: ''}
         };
         this.handlePropertyChange = this.handlePropertyChange.bind(this);
@@ -67,10 +64,12 @@ class CalendarEdit extends React.Component<Props, State> {
     async componentDidMount() {
         if (this.props.match.params.id !== 'new') {
             try {
+                console.log('LL');
                 const calendar = await (await fetch(`/api/calendar/${this.props.match.params.id}`
                     , {credentials: 'include'})).json();
                 this.setState({calendarItem: calendar});
             } catch (error) {
+                console.log(error);
                 this.props.history.push('/');
             }
         }
@@ -93,17 +92,17 @@ class CalendarEdit extends React.Component<Props, State> {
 
     async handleSubmit(event: React.FormEvent) {
         event.preventDefault();
-        const {calendarItem, csrfToken} = this.state;
-
+        const {calendarItem} = this.state;
         await fetch('/api/calendar', {
-            method: (calendarItem.id) ? 'PUT' : 'POST',
-            headers: {
-                'X-XSRF-TOKEN': csrfToken,
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(calendarItem),
+            method: (calendarItem.id) ? 'PUT' : 'POST'
+            , headers: {
+                'Content-Type': 'application/json',
+                'X-XSRF-TOKEN': this.props.cookies.get('XSRF-TOKEN')
+            }
+            , credentials: 'include'
+            , body: JSON.stringify(calendarItem)
         });
+
         this.props.history.push('/calendars');
     }
 
@@ -112,7 +111,7 @@ class CalendarEdit extends React.Component<Props, State> {
         const title = <h2>{calendarItem.id ? 'Edit Calendar' : 'Add Calendar'}</h2>;
 
         return <div>
-            <AppNavbar user={this.state.user} csrfToken={this.state.csrfToken}/>
+            <AppNavbar user={this.state.user}/>
             <Container>
                 {title}
                 <Form onSubmit={this.handleSubmit}>
@@ -132,16 +131,13 @@ class CalendarEdit extends React.Component<Props, State> {
                                onChange={this.handlePropertyChange} autoComplete="year-level1"/>
                     </FormGroup>
                     <FormGroup>
-                        <Label for="bank">Bank</Label>
-                        <Input type="text" name="bank" id="bank" value={calendarItem.bank.toString() || ''}
-                               onChange={this.handlePropertyChange} autoComplete="bank-level1"/>
-                    </FormGroup>
-                    <FormGroup>
-                        <Label for="bank">Import external calendar file</Label>
+                        <Label for="externalCalendarUrl">Import external calendar file</Label>
                         <Input type="text" name="externalCalendarUrl" id="externalCalendarUrl"
-                               value={calendarItem.externalCalendarUrl.href || ''}
-                               onChange={this.handlePropertyChange} autoComplete="externalCaldarUrl-level1"/>
+                               value={calendarItem.externalCalendarUrl || ''}
+                               onChange={this.handlePropertyChange} autoComplete="externalCalendarUrl-level1"/>
                     </FormGroup>
+
+
                     <FormGroup>
                         <Button color="primary" type="submit">Save</Button>{' '}
                         <Button color="secondary" tag={Link} to="/calendars">Cancel</Button>

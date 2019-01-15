@@ -5,7 +5,6 @@ import Home from '../layout/Home';
 import CalendarList from '../calendar/CalendarList';
 import CalendarEdit from '../calendar/CalendarEdit';
 import {CookiesProvider} from 'react-cookie';
-import CalendarView from "../calendar/CalendarView";
 
 
 interface Props {
@@ -16,6 +15,7 @@ interface State {
     // state types
 }
 
+//Add secure routes and groups
 class App extends Component<Props, State> {
     render() {
         return (
@@ -25,7 +25,6 @@ class App extends Component<Props, State> {
                         <Route path='/' exact={true} component={Home}/>
                         <Route path='/calendars' exact={true} component={CalendarList}/>
                         <Route path='/calendar/:id' component={CalendarEdit}/>
-                        <Route path='/calendars/view' exact={true} component={CalendarView}/>
                     </Switch>
                 </Router>
             </CookiesProvider>

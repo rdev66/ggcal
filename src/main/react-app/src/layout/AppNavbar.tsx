@@ -11,24 +11,22 @@ interface User {
 
 interface Props {
     user: User;
-    csrfToken: string;
+    //csrfToken: string;
 }
 
 
 interface State {
     // state types
     isOpen: boolean;
-    csrfToken: string;
+    //csrfToken: string;
 }
 
 export default class AppNavbar extends React.Component<Props, State> {
     constructor(props: Props) {
         super(props);
-        const {csrfToken} = props;
-        this.state = ({isOpen: false, csrfToken: csrfToken});
+        //const {csrfToken} = props;
+        this.state = ({isOpen: false});
         this.toggle = this.toggle.bind(this);
-        console.log('HH');
-        console.log(this.props.user);
     }
 
     toggle() {
@@ -53,7 +51,7 @@ export default class AppNavbar extends React.Component<Props, State> {
 
     logout() {
         const headers = new Headers();
-        headers.append('X-XSRF-TOKEN', this.state.csrfToken);
+        //headers.append('X-XSRF-TOKEN', this.state.csrfToken);
 
         //credentials = true transfers cookies.
         fetch('/api/logout', {

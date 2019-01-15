@@ -24,8 +24,6 @@ public class GlencoreCalendar {
     //ISO-3166
     private String countryCode;
 
-    private boolean bank;
-
     private int year;
 
     private Set<GlencoreEvent> events;
@@ -40,7 +38,6 @@ public class GlencoreCalendar {
     public GlencoreCalendar(CalendarDto calendarDto) {
         this.id = calendarDto.getId();
         this.name = calendarDto.getName();
-        this.bank = calendarDto.isBank();
         this.countryCode = calendarDto.getCountryCode();
         this.year = calendarDto.getYear();
         this.events = calendarDto.getEvents().stream().map(GlencoreEvent::new).collect(Collectors.toSet());

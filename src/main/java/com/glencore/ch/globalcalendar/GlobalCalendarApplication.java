@@ -52,8 +52,7 @@ public class GlobalCalendarApplication implements CommandLineRunner {
         eventRepository.save(sampleEvent2);
         eventRepository.save(bankHolidayEvent1);
 
-        calendarRepository.save(new GlencoreCalendar(null, "Spain, official holidays", "ES", false, 2019, Set.of(sampleEvent1, sampleEvent2), null, null));
-        calendarRepository.save(new GlencoreCalendar(null, "Spain, bank holidays", "ES", true, 2019, Set.of(bankHolidayEvent1), null, null));
+        calendarRepository.save(new GlencoreCalendar(null, "Spain, official holidays", "ES", 2019, Set.of(sampleEvent1, sampleEvent2, bankHolidayEvent1), null, null));
 
 
         // fetch all customers
@@ -71,7 +70,7 @@ public class GlobalCalendarApplication implements CommandLineRunner {
 
         System.out.println("Calendars found with findAllByCountryCodeAndBank('ES', false):");
         System.out.println("--------------------------------");
-        GlencoreCalendar glencoreCalendar = calendarRepository.findByCountryCodeAndBank("ES", false);
+        GlencoreCalendar glencoreCalendar = calendarRepository.findByCountryCodeAndYear("ES", 2019);
         System.out.println(glencoreCalendar);
     }
 }

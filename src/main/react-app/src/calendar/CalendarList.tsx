@@ -82,18 +82,21 @@ class CalendarList extends React.Component<Props, State> {
             return <tr key={calendar.id}>
                 <td style={{whiteSpace: 'nowrap'}}>{calendar.name}</td>
                 <td>{calendar.countryCode}</td>
-                <td>{calendar.events.map(event => {
-                    return <div key={event.id}>{new Intl.DateTimeFormat('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: '2-digit'
-                    }).format(new Date(event.start))}: {new Intl.DateTimeFormat('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: '2-digit'
-                    }).format(new Date(event.end))} {event.title}</div>
-                })}</td>
-                <td>{calendar.bank.toString()}</td>
+                <td>
+                    <ul>{calendar.events.map(event => {
+                        return <li>
+                            <div key={event.id}>{new Intl.DateTimeFormat('en-US', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: '2-digit'
+                            }).format(new Date(event.start))}: {new Intl.DateTimeFormat('en-US', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: '2-digit'
+                            }).format(new Date(event.end))} {event.title}</div>
+                        </li>
+                    })}</ul>
+                </td>
                 <td>
                     <ButtonGroup>
                         <Button size="sm" color="primary" tag={Link} to={"/calendar/" + calendar.id}>Edit</Button>
@@ -105,7 +108,7 @@ class CalendarList extends React.Component<Props, State> {
 
         return (
             <div>
-                <AppNavbar user={this.state.user} csrfToken={this.state.csrfToken}/>
+                <AppNavbar user={this.state.user}/>
                 <Container fluid>
                     <div className="float-right">
                         <Button color="success" tag={Link} to="/calendar/new">Add Calendar</Button>
@@ -117,7 +120,6 @@ class CalendarList extends React.Component<Props, State> {
                             <th data-width="20%">Name</th>
                             <th data-width="10%">Country</th>
                             <th>Events</th>
-                            <th data-width="10%">Bank Holidays</th>
                         </tr>
                         </thead>
                         <tbody>

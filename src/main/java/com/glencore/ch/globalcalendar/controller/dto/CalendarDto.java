@@ -17,7 +17,6 @@ public class CalendarDto {
 
     String id;
     String name;
-    boolean bank;
     String countryCode;
     int year;
     String externalCalendarUrl;
@@ -28,7 +27,6 @@ public class CalendarDto {
     public CalendarDto(GlencoreCalendar calendar) {
         this.id = calendar.getId();
         this.name = calendar.getName();
-        this.bank = calendar.isBank();
         this.countryCode = calendar.getCountryCode();
         this.year = calendar.getYear();
         this.externalCalendarUrl = calendar.getExternalCalendarUrl();
