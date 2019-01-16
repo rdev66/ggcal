@@ -1,1 +1,1 @@
-web: java $JAVA_OPTS com.glencore.ch.globalcalendar.GlobalCalendarApplication --spring.config.location=classpath:/application.yml
+web: java $JAVA_OPTS -jar target/GlobalCalendar-0.0.1-SNAPSHOT.jar --server.port=$PORT $JAR_OPTS --spring.config.location=classpath:/application.yml
