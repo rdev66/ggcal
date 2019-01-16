@@ -1,0 +1,1 @@
+-Dspring.data.mongodb.uri=$MONGODB_URI
