@@ -7,6 +7,7 @@ interface Calendar {
     year: number;
     events: GlencoreEvent[];
     externalCalendarUrl: string;
+    subscription: string;
 }
 
 export default Calendar;

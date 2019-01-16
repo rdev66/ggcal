@@ -19,6 +19,7 @@ import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.property.CalScale;
 import net.fortuna.ical4j.model.property.ProdId;
 import net.fortuna.ical4j.model.property.Version;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +27,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -92,7 +94,7 @@ public class CalendarController {
     @PostMapping(value = "/calendar")
     @ResponseStatus(HttpStatus.OK)
     public void addCalendar(@Valid @RequestBody CalendarDto calendarDto,
-                            @AuthenticationPrincipal OAuth2User principal) throws URISyntaxException {
+                            @AuthenticationPrincipal OAuth2User principal, HttpServletRequest request) {
         log.info("Request to add calendar: {}", calendarDto);
 
         Map<String, Object> details = principal.getAttributes();
@@ -106,21 +108,29 @@ public class CalendarController {
 
         calendar.setId(null);
 
-        Optional<List<GlencoreEvent>> importedEvents = this.importExternalCalendarEvents(calendarDto.getExternalCalendarUrl());
-        importedEvents.ifPresent(events -> addAllEvents(calendar, events));
+        if (StringUtils.isNotEmpty(calendarDto.getExternalCalendarUrl())) {
+            Optional<Set<GlencoreEvent>> importedEvents = this.importExternalCalendarEvents(calendarDto.getExternalCalendarUrl());
+            importedEvents.ifPresent(events -> addAllEventsForYear(calendar, events));
+        }
+
+        //Generate ics url
+        calendar.setSubscription(String.format(request.getContextPath() + "/calendar/%s/%s", calendar.getCountryCode(), calendar.getYear()));
 
         calendarRepository.save(calendar);
         log.info("Calendar {} created!", calendar);
     }
 
-    private void addAllEvents(GlencoreCalendar glencoreCalendar, List<GlencoreEvent> importedEvents) {
-        glencoreCalendar.getEvents().addAll(importedEvents);
+    private void addAllEventsForYear(GlencoreCalendar glencoreCalendar, Set<GlencoreEvent> importedEvents) {
+        glencoreCalendar.getEvents().addAll(importedEvents.stream()
+                .filter(event -> event.getStart().getYear() == glencoreCalendar
+                        .getYear()).collect(Collectors.toCollection(HashSet::new)));
+
         log.info("{} Events imported  and linked to calendar {}"
                 , importedEvents.size()
                 , glencoreCalendar.getName());
     }
 
-    private Optional<List<GlencoreEvent>> importExternalCalendarEvents(String url) {
+    private Optional<Set<GlencoreEvent>> importExternalCalendarEvents(String url) {
 
         URL calUrl;
         try {
@@ -134,11 +144,12 @@ public class CalendarController {
         try (InputStreamReader in = new InputStreamReader(calUrl.openStream())) {
 
             ComponentList<CalendarComponent> cs = new CalendarBuilder().build(in).getComponents();
-            return Optional.of(cs.stream().filter(component -> component instanceof VEvent)
+            return Optional.of(cs.stream()
+                    .filter(component -> component instanceof VEvent)
                     .peek(this::prettyPrintEvent) //TODO remove when you feel you're ready.
                     .map(event -> new GlencoreEvent((VEvent) event))
-                    .sorted()
-                    .collect(Collectors.toList()));
+                    .sorted(Comparator.comparing(GlencoreEvent::getStart))
+                    .collect(Collectors.toCollection(LinkedHashSet::new)));
         } catch (IOException ioe) {
             log.error("IOE", ioe);
         } catch (ParserException ioe) {
@@ -155,7 +166,7 @@ public class CalendarController {
 
     @PutMapping(value = "/calendar")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<GlencoreCalendar> editCalendar(@Valid @RequestBody CalendarDto calendarDto) {
+    public ResponseEntity<GlencoreCalendar> editCalendar(@Valid @RequestBody CalendarDto calendarDto, HttpServletRequest request) {
         log.info("Request to update calendar: {}", calendarDto);
 
         GlencoreCalendar calendar = calendarRepository
@@ -166,9 +177,20 @@ public class CalendarController {
         calendar.setName(calendarDto.getName());
         calendar.setYear(calendarDto.getYear());
         calendar.setEvents(calendarDto.getEvents().stream()
-                .map(GlencoreEvent::new).collect(Collectors.toSet()));
+                .map(GlencoreEvent::new)
+                .collect(Collectors.toCollection(HashSet::new)));
+
+
+        Optional<Set<GlencoreEvent>> importedEvents = this.importExternalCalendarEvents(calendarDto.getExternalCalendarUrl());
+        importedEvents.ifPresent(events -> addAllEventsForYear(calendar, events));
+
+
+        //Generate ics url
+        calendar.setSubscription(String.format(request.getContextPath() + "/calendar/%s/%s", calendar.getCountryCode(), calendar.getYear()));
 
         GlencoreCalendar result = calendarRepository.save(calendar);
+
+        //https://fcal.ch/privat/fcal_holidays.ics?hl=de&klasse=5&geo=2861
         log.info("Calendar {} updated!", calendar);
         return ResponseEntity.ok().body(result);
 

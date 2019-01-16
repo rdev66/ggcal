@@ -46,7 +46,8 @@ class CalendarEdit extends React.Component<Props, State> {
         countryCode: '',
         year: 0,
         events: [] as GlencoreEvent[],
-        externalCalendarUrl: ''
+        externalCalendarUrl: '',
+        subscription: ''
     };
 
     constructor(props: Props) {
@@ -64,7 +65,6 @@ class CalendarEdit extends React.Component<Props, State> {
     async componentDidMount() {
         if (this.props.match.params.id !== 'new') {
             try {
-                console.log('LL');
                 const calendar = await (await fetch(`/api/calendar/${this.props.match.params.id}`
                     , {credentials: 'include'})).json();
                 this.setState({calendarItem: calendar});

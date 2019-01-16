@@ -37,8 +37,8 @@ public class GlencoreEvent {
     public GlencoreEvent(VEvent newVEvent) {
         this.start = newVEvent.getStartDate().getDate()
                 .toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-        this.end = newVEvent.getStartDate().getDate()
+        this.end = newVEvent.getEndDate().getDate()
                 .toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-        this.title = "IMPORTED: " + newVEvent.getSummary().getValue();
+        this.title = "*" + newVEvent.getSummary().getValue();
     }
 }

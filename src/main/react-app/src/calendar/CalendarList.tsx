@@ -85,18 +85,15 @@ class CalendarList extends React.Component<Props, State> {
                 <td>
                     <ul>{calendar.events.map(event => {
                         return <li>
-                            <div key={event.id}>{new Intl.DateTimeFormat('en-US', {
+                            <div key={event.id}><div className="font-weight-bold">{new Intl.DateTimeFormat('en-US', {
                                 year: 'numeric',
                                 month: 'long',
                                 day: '2-digit'
-                            }).format(new Date(event.start))}: {new Intl.DateTimeFormat('en-US', {
-                                year: 'numeric',
-                                month: 'long',
-                                day: '2-digit'
-                            }).format(new Date(event.end))} {event.title}</div>
+                            }).format(new Date(event.start))}</div> - {event.title}</div>
                         </li>
                     })}</ul>
                 </td>
+                <td>{calendar.subscription}</td>
                 <td>
                     <ButtonGroup>
                         <Button size="sm" color="primary" tag={Link} to={"/calendar/" + calendar.id}>Edit</Button>
@@ -113,13 +110,15 @@ class CalendarList extends React.Component<Props, State> {
                     <div className="float-right">
                         <Button color="success" tag={Link} to="/calendar/new">Add Calendar</Button>
                     </div>
-                    <h3>My Calendars</h3>
+                    <h3>Glencore Internal Calendars</h3>
                     <Table className="mt-4">
                         <thead>
                         <tr>
                             <th data-width="20%">Name</th>
-                            <th data-width="10%">Country</th>
+                            <th data-width="5%">Country</th>
                             <th>Events</th>
+                            <th data-width="30%">Subscribe</th>
+                            <th data-width="10%">Actions</th>
                         </tr>
                         </thead>
                         <tbody>

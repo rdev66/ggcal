@@ -4,7 +4,10 @@ import com.glencore.ch.globalcalendar.controller.dto.CalendarDto;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 
+import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 @NoArgsConstructor
@@ -32,6 +35,8 @@ public class GlencoreCalendar {
 
     private String externalCalendarUrl;
 
+    private String subscription;
+
     //TODO add states, hierarchy and aggregate.
 
 
@@ -40,7 +45,7 @@ public class GlencoreCalendar {
         this.name = calendarDto.getName();
         this.countryCode = calendarDto.getCountryCode();
         this.year = calendarDto.getYear();
-        this.events = calendarDto.getEvents().stream().map(GlencoreEvent::new).collect(Collectors.toSet());
+        this.events = calendarDto.getEvents().stream().map(GlencoreEvent::new).collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
 }
