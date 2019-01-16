@@ -24,6 +24,6 @@ spring:
     test-connection: false
 
   profiles:
-    active: @spring.profiles.active@
+    active: prod
 
 
