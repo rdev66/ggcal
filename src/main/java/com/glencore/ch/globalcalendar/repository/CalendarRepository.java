@@ -4,10 +4,11 @@ import com.glencore.ch.globalcalendar.entity.GlencoreCalendar;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface CalendarRepository extends MongoRepository<GlencoreCalendar, String> {
 
-    GlencoreCalendar findByCountryCodeAndYear(String countryCode, int year);
+    Optional<GlencoreCalendar> findByCountryCodeAndYear(String countryCode, int year);
 
     GlencoreCalendar findByNameAndCountryCodeAndYear(String name, String countryCode, int year);
 

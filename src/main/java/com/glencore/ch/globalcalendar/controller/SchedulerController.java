@@ -26,7 +26,7 @@ public class SchedulerController {
     //http://localhost:8080/api/isDateBankHolidayInCountry/2019-01-09/ES
     @GetMapping(value = "/isDateBankHolidayInCountry/{date}/{countryCode}")
     public boolean isDateBankHolidayInCountry(@PathVariable final String date, @PathVariable String countryCode) {
-        return calendarRepository.findByCountryCodeAndYear(countryCode, LocalDate.parse(date).getYear())
+        return calendarRepository.findByCountryCodeAndYear(countryCode, LocalDate.parse(date).getYear()).get()
                 .getEvents().stream().anyMatch(event -> isWithinRange(LocalDate.parse(date), event));
 
     }

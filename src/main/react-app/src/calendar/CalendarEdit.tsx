@@ -158,14 +158,14 @@ class CalendarEdit extends React.Component<Props, State> {
         this.setState({modalIsOpen: true, selection: e});
     };
 
-    saveEvent = (e: any) => {
-        console.log(e);
+    saveEvent = () => {
+        console.log(JSON.stringify(this.state.selection));
         this.state.calendarItem.events.push({
             id: 0,
             calendarId: this.state.calendarItem.id,
-            title: e.target.value,
-            start: new Date(),
-            end: new Date()
+            title: this.state.selection.title,
+            start: this.state.selection.start,
+            end: this.state.selection.end
         });
         this.closeModal();
     };
@@ -235,8 +235,8 @@ class CalendarEdit extends React.Component<Props, State> {
                 labelledBy={this.getStartState()}>
                 <div>Event:</div>
                 <FormGroup>
-                    <Label for="name">Event Name</Label>
-                    <Input type="text" name="name" id="name"
+                    <Label for="name">Event Title</Label>
+                    <Input type="text" name="title" id="title"
                            onChange={this.handleSelectionChange} autoComplete="name"/>
                 </FormGroup>
                 <button className={"btn btn-primary"} onClick={this.saveEvent}>Save</button>

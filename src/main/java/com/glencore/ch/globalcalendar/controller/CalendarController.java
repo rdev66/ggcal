@@ -69,16 +69,12 @@ public class CalendarController {
         return calendarRepository.findAllByCreatedBy(principal.getName());
     }
 
-    //Actual calendar subscription.
-    @GetMapping(value = "/calendar/{countryCode}/{year}", produces = TEXT_PLAIN_VALUE)
-    public String getCalendar(@PathVariable(value = "countryCode") String countryCode, @PathVariable(value = "year") Integer year) {
-        GlencoreCalendar glencoreCalendar = calendarRepository.findByCountryCodeAndYear(countryCode, year);
-        return transformToICS(glencoreCalendar).toString();
-    }
 
-    @GetMapping(value = "/subscription/{id}", produces = TEXT_PLAIN_VALUE)
-    public ResponseEntity<?> getCalendar(@PathVariable(value = "id") String id) {
-        Optional<GlencoreCalendar> glencoreCalendar = calendarRepository.findById(id);
+    //Actual calendar subscription.
+    //calendar.setSubscription("webcal://" + String.format(request.getRemoteHost() + "/calendar/%s/%s/%s.ics"
+    @GetMapping(value = "/calendar/{countryCode}/{year}", produces = TEXT_PLAIN_VALUE)
+    public ResponseEntity<?> getCalendar(@PathVariable(value = "countryCode") String countryCode, @PathVariable(value = "year") int year) {
+        Optional<GlencoreCalendar> glencoreCalendar = calendarRepository.findByCountryCodeAndYear(countryCode, year);
         return glencoreCalendar.map(response -> ResponseEntity.ok().body(transformToICS(response).toString()))
                 .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
@@ -117,7 +113,9 @@ public class CalendarController {
         //calendar.setSubscription("webcal://ical.mac.com/ical/UK32Holidays.ics");
 
         //Generate ics url
-        calendar.setSubscription("webcal://" + String.format(request.getRemoteHost() + "/calendar/%s/%s/%s.ics"
+        http:
+//localhost:8080/api/calendar/ES/2019
+        calendar.setSubscription("webcal://" + String.format(request.getRemoteHost() + "/api/calendar/%s/%s"
                 , calendar.getCountryCode(), calendar.getYear(), calendar.getName()));
 
         calendarRepository.save(calendar);

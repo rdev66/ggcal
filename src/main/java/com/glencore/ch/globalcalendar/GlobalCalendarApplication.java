@@ -74,7 +74,7 @@ public class GlobalCalendarApplication implements CommandLineRunner {
 
         System.out.println("Calendars found with findAllByCountryCodeAndBank('ES', false):");
         System.out.println("--------------------------------");
-        GlencoreCalendar glencoreCalendar = calendarRepository.findByCountryCodeAndYear("ES", 2019);
+        GlencoreCalendar glencoreCalendar = calendarRepository.findByCountryCodeAndYear("ES", 2019).get();
         System.out.println(glencoreCalendar);
     }
 }
