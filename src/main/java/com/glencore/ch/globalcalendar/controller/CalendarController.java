@@ -32,7 +32,6 @@ import javax.validation.Valid;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.Principal;
 import java.text.ParseException;
@@ -114,16 +113,19 @@ public class CalendarController {
         }
 
         //Generate ics url
-        calendar.setSubscription(String.format(request.getContextPath() + "/calendar/%s/%s", calendar.getCountryCode(), calendar.getYear()));
+        //calendar.setSubscription(String.format(request.getContextPath() + "/calendar/%s/%s", calendar.getCountryCode(), calendar.getYear()));
+        calendar.setSubscription("webcal://ical.mac.com/ical/UK32Holidays.ics");
 
         calendarRepository.save(calendar);
-        log.info("Calendar {} created!", calendar);
+        log.info("MyCalendar {} created!", calendar);
     }
 
     private void addAllEventsForYear(GlencoreCalendar glencoreCalendar, Set<GlencoreEvent> importedEvents) {
         glencoreCalendar.getEvents().addAll(importedEvents.stream()
                 .filter(event -> event.getStart().getYear() == glencoreCalendar
-                        .getYear()).collect(Collectors.toCollection(HashSet::new)));
+                        .getYear())
+                .sorted()
+                .collect(Collectors.toCollection(TreeSet::new)));
 
         log.info("{} Events imported  and linked to calendar {}"
                 , importedEvents.size()
@@ -181,17 +183,13 @@ public class CalendarController {
                 .collect(Collectors.toCollection(HashSet::new)));
 
 
-        Optional<Set<GlencoreEvent>> importedEvents = this.importExternalCalendarEvents(calendarDto.getExternalCalendarUrl());
-        importedEvents.ifPresent(events -> addAllEventsForYear(calendar, events));
-
-
         //Generate ics url
         calendar.setSubscription(String.format(request.getContextPath() + "/calendar/%s/%s", calendar.getCountryCode(), calendar.getYear()));
 
         GlencoreCalendar result = calendarRepository.save(calendar);
 
         //https://fcal.ch/privat/fcal_holidays.ics?hl=de&klasse=5&geo=2861
-        log.info("Calendar {} updated!", calendar);
+        log.info("MyCalendar {} updated!", calendar);
         return ResponseEntity.ok().body(result);
 
     }
@@ -207,7 +205,7 @@ public class CalendarController {
                     .findById(calendarDto.getId()).orElseThrow(() -> new RuntimeException("No Result found"));
         }
         calendarRepository.delete(glencoreCalendarToDelete);
-        log.info("Calendar name: {}, removed!!", glencoreCalendarToDelete);
+        log.info("MyCalendar name: {}, removed!!", glencoreCalendarToDelete);
         return ResponseEntity.ok().build();
     }
 

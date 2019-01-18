@@ -16,7 +16,6 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.TreeSet;
 
 @Slf4j
 @SpringBootApplication
@@ -57,7 +56,7 @@ public class GlobalCalendarApplication implements CommandLineRunner {
         Set<GlencoreEvent> eventsSet = new HashSet();
         eventsSet.addAll(Set.of(sampleEvent1, sampleEvent2, bankHolidayEvent1));
 
-        calendarRepository.save(new GlencoreCalendar(null, "Spain, official holidays", "ES", 2019, eventsSet, null, null, null));
+        calendarRepository.save(new GlencoreCalendar(null, "Spain, official holidays", "ES", 2019, eventsSet, null, null, ""));
 
 
         // fetch all customers

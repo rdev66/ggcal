@@ -55,7 +55,7 @@ class CalendarList extends React.Component<Props, State> {
     }
 
     async remove(calendarItem: Calendar) {
-        console.log('Calendar: ' + calendarItem);
+        console.log('MyCalendar: ' + calendarItem);
         await fetch('api/calendar', {
             method: 'DELETE',
             headers: {
@@ -85,15 +85,17 @@ class CalendarList extends React.Component<Props, State> {
                 <td>
                     <ul>{calendar.events.map(event => {
                         return <li>
-                            <div key={event.id}><div className="font-weight-bold">{new Intl.DateTimeFormat('en-US', {
-                                year: 'numeric',
-                                month: 'long',
-                                day: '2-digit'
-                            }).format(new Date(event.start))}</div> - {event.title}</div>
+                            <div key={event.id}>
+                                <div className="font-weight-bold">{new Intl.DateTimeFormat('en-US', {
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: '2-digit'
+                                }).format(new Date(event.start))}</div>
+                                - {event.title}</div>
                         </li>
                     })}</ul>
                 </td>
-                <td>{calendar.subscription}</td>
+                <td><Button size="sm" color="default"><a href={calendar.subscription}>Subscribe!</a></Button></td>
                 <td>
                     <ButtonGroup>
                         <Button size="sm" color="primary" tag={Link} to={"/calendar/" + calendar.id}>Edit</Button>

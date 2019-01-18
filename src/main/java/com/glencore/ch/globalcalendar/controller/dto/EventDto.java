@@ -14,15 +14,15 @@ public class EventDto {
 
     String id;
     String linkedCalendarId;
-    String summary;
-    String startDate;
-    String endDate;
+    String title;
+    String start;
+    String end;
 
     public EventDto(GlencoreEvent glencoreEvent) {
         this.id = glencoreEvent.getId();
         this.linkedCalendarId = glencoreEvent.getCalendarId();
-        this.summary = glencoreEvent.getTitle();
-        this.startDate = glencoreEvent.getStart().toString();
-        this.endDate = glencoreEvent.getEnd().toString();
+        this.title = glencoreEvent.getTitle();
+        this.start = glencoreEvent.getStart().toString();
+        this.end = glencoreEvent.getEnd().toString();
     }
 }
