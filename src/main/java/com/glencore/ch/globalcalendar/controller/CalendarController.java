@@ -114,7 +114,11 @@ public class CalendarController {
 
         //Generate ics url
         //calendar.setSubscription(String.format(request.getContextPath() + "/calendar/%s/%s", calendar.getCountryCode(), calendar.getYear()));
-        calendar.setSubscription("webcal://ical.mac.com/ical/UK32Holidays.ics");
+        //calendar.setSubscription("webcal://ical.mac.com/ical/UK32Holidays.ics");
+
+        //Generate ics url
+        calendar.setSubscription("webcal://" + String.format(request.getRemoteHost() + "/calendar/%s/%s/%s.ics"
+                , calendar.getCountryCode(), calendar.getYear(), calendar.getName()));
 
         calendarRepository.save(calendar);
         log.info("MyCalendar {} created!", calendar);
@@ -182,9 +186,6 @@ public class CalendarController {
                 .map(GlencoreEvent::new)
                 .collect(Collectors.toCollection(HashSet::new)));
 
-
-        //Generate ics url
-        calendar.setSubscription(String.format(request.getContextPath() + "/calendar/%s/%s", calendar.getCountryCode(), calendar.getYear()));
 
         GlencoreCalendar result = calendarRepository.save(calendar);
 

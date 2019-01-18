@@ -166,7 +166,7 @@
                             <outputDirectory>${basedir}/target/classes/static</outputDirectory>
                             <resources>
                                 <resource>
-                                    <directory>app/build</directory>
+                                    <directory>src/main/react-app/build</directory>
                                 </resource>
                             </resources>
                         </configuration>
@@ -178,7 +178,8 @@
                 <artifactId>frontend-maven-plugin</artifactId>
                 <version>1.6</version>
                 <configuration>
-                    <workingDirectory>src/main/react-app</workingDirectory>
+                    <workingDirectory>${basedir}/src/main/react-app</workingDirectory>
+                    <installDirectory>target</installDirectory>
                 </configuration>
                 <executions>
                     <execution>
@@ -205,7 +206,7 @@
                         </goals>
                         <phase>compile</phase>
                         <configuration>
-                            <arguments>build</arguments>
+                            <arguments>run build</arguments>
                         </configuration>
                     </execution>
                 </executions>
